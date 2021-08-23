@@ -1,0 +1,21 @@
+{
+  "name": "com.mitay-walle.transforminspector",
+  "version": "1.0.1",
+  "displayName": "Transform Inspector",
+  "description": "Create Reset buttons for transform, while managed through SerializedProperty, with proper rotation behaviour, undo and visible different values",
+  "unity": "2018.4",
+  "unityRelease": "0b5",
+  "documentationUrl": "https://github.com/mitay-walle/Transform_stuff#readme",
+  "licensesUrl": "https://github.com/mitay-walle/Transform_stuff/blob/master/LICENSE",
+  "dependencies": { },
+ "keywords": [
+    "Transform",
+    "Inspector",
+    "Editor"
+  ],
+  "author": {
+    "name": "mitay-walle",
+    "email": "mitay-walle@mail.ru",
+    "url": "https://github.com/mitay-walle"
+  }
+}
