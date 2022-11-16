@@ -58,7 +58,7 @@ namespace Plugins.UI.Editor
             }
 
             var old = EditorGUIUtility.labelWidth;
-            EditorGUIUtility.labelWidth = 80;
+            EditorGUIUtility.labelWidth = 90;
             EditorGUI.indentLevel += INDENT_LEVEL;
             _builtInEditor.OnInspectorGUI();
             EditorGUI.indentLevel -= INDENT_LEVEL;
