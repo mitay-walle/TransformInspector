@@ -2,7 +2,7 @@
   "name": "com.mitay-walle.transforminspector",
   "version": "1.0.1",
   "displayName": "Transform Inspector",
-  "description": "Create Reset buttons for transform, while managed through SerializedProperty, with proper rotation behaviour, undo and visible different values",
+  "description": "Adds reset buttons for position, rotation and scale and save full proper fields support to Transform",
   "unity": "2018.4",
   "unityRelease": "0b5",
   "documentationUrl": "https://github.com/mitay-walle/Transform_stuff#readme",
