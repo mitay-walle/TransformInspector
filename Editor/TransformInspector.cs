@@ -1,144 +1,144 @@
-﻿/// Custom transform inspector for Unity 2018.1.7f
-///MIT License
-///Copyright (c) 2018 mitay-walle
-
+using System;
+using System.Reflection;
 using UnityEditor;
 using UnityEngine;
 using Object = UnityEngine.Object;
 
-namespace Plugins.TransformInspector.Editor
+namespace Plugins.UI.Editor
 {
     [CustomEditor(typeof(Transform)), CanEditMultipleObjects]
-    public class TransformEditor : UnityEditor.Editor
+    public class TransformInspector : Editor
     {
-        private bool EnableFinished;
+        private const int BUTTON_INDENT = 20;
+        private const int BUTTON_WIDTH = 20;
+        private const int BUTTON_HEIGHT = 18;
+        private const int BUTTON_HEIGHT_SPACING = 2;
+        private const int BUTTON_Y_START = 4;
+        private const int INDENT_LEVEL = 2;
 
-        void OnEnable()
+        private UnityEditor.Editor _builtInEditor;
+
+        protected void OnEnable()
         {
-            if (!EnableFinished)
-            {
-                EnableFinished = true;
-                serializedObject.Update();
-                serializedObject.FindProperty("m_LocalEulerAnglesHint").vector3Value =
-                    serializedObject.FindProperty("m_LocalRotation").quaternionValue.eulerAngles;
-            }
+            _builtInEditor = CreateEditor(targets,
+                typeof(UnityEditor.Editor).Assembly.GetType("UnityEditor.TransformInspector"));
+        }
+
+        protected void OnDisable()
+        {
+            OnDestroy();
+        }
+
+        private void OnDestroy()
+        {
+            if (_builtInEditor) DestroyImmediate(_builtInEditor);
         }
 
         public override void OnInspectorGUI()
         {
-            EditorGUI.BeginChangeCheck();
-            serializedObject.Update();
-
-            EditorGUI.indentLevel = 0;
-            var oldWidth = EditorGUIUtility.labelWidth;
-            EditorGUIUtility.labelWidth = 60f;
-
-            GUILayout.BeginHorizontal();
-            if (GUILayout.Button("X", GUILayout.Width(20f)))
+            if (!_builtInEditor)
             {
-                Pos(serializedObject);
+                OnEnable();
                 return;
             }
 
-            EditorGUILayout.PropertyField(serializedObject.FindProperty("m_LocalPosition"), new GUIContent(""));
-            GUILayout.EndHorizontal();
-
-            GUILayout.BeginHorizontal();
-            if (GUILayout.Button("X", GUILayout.Width(20f)))
+            if (targets.Length != _builtInEditor.targets.Length)
             {
-                Rot(serializedObject);
+                OnEnable();
                 return;
             }
 
-            var prop2 = serializedObject.FindProperty("m_LocalRotation");
-
-            RotationPropertyField(prop2, new GUIContent(""));
-
-            GUILayout.EndHorizontal();
-
-            GUILayout.BeginHorizontal();
-            if (GUILayout.Button("X", GUILayout.Width(20f)))
+            for (int i = 0; i < targets.Length; i++)
             {
-                Sc(serializedObject);
-                return;
-            }
-
-
-            EditorGUILayout.PropertyField(serializedObject.FindProperty("m_LocalScale"), new GUIContent(""));
-
-            GUILayout.EndHorizontal();
-            EditorGUIUtility.labelWidth = oldWidth;
-
-
-            if (EditorGUI.EndChangeCheck()) serializedObject.ApplyModifiedProperties();
-        }
-
-        void Pos(SerializedObject s)
-        {
-            s.FindProperty("m_LocalPosition").vector3Value = Vector3.zero;
-            if (EditorGUI.EndChangeCheck()) serializedObject.ApplyModifiedProperties();
-        }
-
-        void Rot(SerializedObject s)
-        {
-            s.FindProperty("m_LocalRotation").quaternionValue = Quaternion.Euler(Vector3.zero);
-            if (EditorGUI.EndChangeCheck()) serializedObject.ApplyModifiedProperties();
-        }
-
-        void Sc(SerializedObject s)
-        {
-            s.FindProperty("m_LocalScale").vector3Value = Vector3.one;
-            if (EditorGUI.EndChangeCheck()) serializedObject.ApplyModifiedProperties();
-        }
-
-
-        private void RotationPropertyField(SerializedProperty rotationProperty, GUIContent content)
-        {
-            Transform transform = (Transform)targets[0];
-            Quaternion localRotation = transform.localRotation;
-            foreach (Object t in targets)
-                if (!SameRotation(localRotation, ((Transform)t).localRotation))
+                if (targets[i] != _builtInEditor.targets[i])
                 {
-                    EditorGUI.showMixedValue = true;
-                    break;
+                    OnEnable();
+                    return;
                 }
-
-            EditorGUI.BeginChangeCheck();
-
-            Vector3 eulerAngles =
-                EditorGUILayout.Vector3Field(content.text, TransformUtils.GetInspectorRotation(transform));
-
-            if (EditorGUI.EndChangeCheck())
-            {
-                Undo.RecordObjects(targets, "Rotation Changed");
-                foreach (Object obj in targets)
-                {
-                    Transform t = (Transform)obj;
-                    eulerAngles = FixIfNaN(eulerAngles);
-                    TransformUtils.SetInspectorRotation(t, eulerAngles);
-                }
-
-                rotationProperty.serializedObject.SetIsDifferentCacheDirty();
             }
 
-            EditorGUI.showMixedValue = false;
+            var old = EditorGUIUtility.labelWidth;
+            EditorGUIUtility.labelWidth = 80;
+            EditorGUI.indentLevel += INDENT_LEVEL;
+            _builtInEditor.OnInspectorGUI();
+            EditorGUI.indentLevel -= INDENT_LEVEL;
+            EditorGUIUtility.labelWidth = old;
+
+            var buttonRect = new Rect(BUTTON_INDENT, BUTTON_Y_START, BUTTON_WIDTH, BUTTON_HEIGHT);
+
+            if (GUI.Button(buttonRect, "X")) //, GUILayout.Width(20f)))
+            {
+                ResetPosition();
+                return;
+            }
+
+            buttonRect = new Rect(BUTTON_INDENT,
+                BUTTON_Y_START + BUTTON_HEIGHT_SPACING + BUTTON_HEIGHT,
+                BUTTON_WIDTH,
+                BUTTON_HEIGHT);
+
+            if (GUI.Button(buttonRect, "X")) //, GUILayout.Width(20f)))
+            {
+                ResetRotation();
+                return;
+            }
+
+            buttonRect = new Rect(BUTTON_INDENT,
+                BUTTON_Y_START + 2 * (BUTTON_HEIGHT + BUTTON_HEIGHT_SPACING),
+                BUTTON_WIDTH,
+                BUTTON_HEIGHT);
+
+            if (GUI.Button(buttonRect, "X")) //, GUILayout.Width(20f)))
+            {
+                ResetScale();
+                return;
+            }
         }
 
-        private Vector3 FixIfNaN(Vector3 v)
+        void ResetPosition()
         {
-            if (float.IsNaN(v.x)) v.x = 0;
-            if (float.IsNaN(v.y)) v.y = 0;
-            if (float.IsNaN(v.z)) v.z = 0;
-            return v;
+            for (int i = 0; i < _builtInEditor.targets.Length; i++)
+            {
+                var transform = _builtInEditor.targets[i] as Transform;
+                if (transform.localRotation != Quaternion.identity)
+                {
+                    Undo.RecordObject(transform, "Position reset");
+                    transform.localPosition = Vector3.zero;
+                }
+            }
+
+            OnEnable();
         }
 
-        private bool SameRotation(Quaternion rot1, Quaternion rot2)
+        void ResetRotation()
         {
-            if (rot1.x != rot2.x) return false;
-            if (rot1.y != rot2.y) return false;
-            if (rot1.z != rot2.z) return false;
-            if (rot1.w != rot2.w) return false;
-            return true;
+            var rotation = Quaternion.Euler(Vector3.zero);
+            for (int i = 0; i < _builtInEditor.targets.Length; i++)
+            {
+                var transform = _builtInEditor.targets[i] as Transform;
+                if (transform.localRotation != Quaternion.identity)
+                {
+                    Undo.RecordObject(transform, "Rotation reset");
+                    transform.localRotation = rotation;
+                }
+            }
+
+            OnEnable();
+        }
+
+        void ResetScale()
+        {
+            for (int i = 0; i < _builtInEditor.targets.Length; i++)
+            {
+                var transform = _builtInEditor.targets[i] as Transform;
+                if (transform.localRotation != Quaternion.identity)
+                {
+                    Undo.RecordObject(transform, "Scale reset");
+                    transform.localScale = Vector3.one;
+                }
+            }
+
+            OnEnable();
         }
     }
 }
