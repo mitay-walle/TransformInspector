@@ -7,7 +7,7 @@ using Object = UnityEngine.Object;
 namespace Plugins.UI.Editor
 {
     [CustomEditor(typeof(Transform)), CanEditMultipleObjects]
-    public class TransformInspector : Editor
+    public class TransformInspector : UnityEditor.Editor
     {
         private const int BUTTON_INDENT = 20;
         private const int BUTTON_WIDTH = 20;
