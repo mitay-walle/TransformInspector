@@ -100,7 +100,7 @@ namespace Plugins.UI.Editor
             for (int i = 0; i < _builtInEditor.targets.Length; i++)
             {
                 var transform = _builtInEditor.targets[i] as Transform;
-                if (transform.localRotation != Quaternion.identity)
+                if (transform.localPosition != Vector3.zero)
                 {
                     Undo.RecordObject(transform, "Position reset");
                     transform.localPosition = Vector3.zero;
@@ -131,7 +131,7 @@ namespace Plugins.UI.Editor
             for (int i = 0; i < _builtInEditor.targets.Length; i++)
             {
                 var transform = _builtInEditor.targets[i] as Transform;
-                if (transform.localRotation != Quaternion.identity)
+                if (transform.localScale != Vector3.one)
                 {
                     Undo.RecordObject(transform, "Scale reset");
                     transform.localScale = Vector3.one;
